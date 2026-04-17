@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+   <style>
+    .logout-btn {
+      float: right;
+      margin-right: 20px;
+      padding: 8px 16px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .logout-btn:hover {
+      background: #d32f2f;
+      transform: scale(1.05);
+    }
+
+    .search-wrapper {
+      margin: 20px 0;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 40px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary, #4f46e5);
+      box-shadow: 0 0 10px rgba(79,70,229,0.3);
+      outline: none;
+    }
+
+    .search-box i {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted, #999);
+      font-size: 16px;
+    }
+
+    .search-box .bi-search { left: 12px; }
+
+    .search-box .bi-x-circle {
+      right: 12px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .search-box input:not(:placeholder-shown) ~ .bi-x-circle {
+      display: block;
+    }
+
+    .search-wrapper button {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: none;
+      background-color: var(--primary, #4f46e5);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .search-wrapper button:hover {
+      background-color: #3b38b8;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <h2><i class="fa-solid fa-book"></i> Library</h2>
+  <a href="index.html">Dashboard</a>
+  <a href="add.html">Add Book</a>
+  <a href="books.html">View Books</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    <h2>Dashboard</h2>
+    <h2 style="margin-left:auto;"></h2>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- SEARCH BAR -->
+    <div class="search-wrapper">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input 
+          type="text" 
+          id="search" 
+          placeholder="Search books..." 
+          onkeyup="searchBooks()"   
+        >
+        <i class="bi bi-x-circle" onclick="clearSearch()"></i>
+      </div>
+      <button onclick="searchBooks()">Search</button>
+      
+    </div>
+
+    <div id="bookContainer" class="grid"></div>
+  </div>
+
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  // Logout function
+  function logout() {
+    fetch('/logout')
+      .then(() => {
+        window.location.href = '/login';
+      })
+      .catch(err => console.error(err));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+MySQL Shell 8.0.43
+
+Copyright (c) 2016, 2025, Oracle and/or its affiliates.
+Oracle is a registered trademark of Oracle Corporation and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+Type '\help' or '\?' for help; '\quit' to exit.
+ MySQL  JS > \mysql
+Unknown command: '\mysql'
+ MySQL  JS > \sql
+Switching to SQL mode... Commands end with ;
+ MySQL  SQL > connect root@localhost
+ERROR: Not connected.
+           -> ;
+ERROR: Not connected.
+ MySQL  SQL > \connect root@localhost
+Creating a session to 'root@localhost'
+Fetching global names for auto-completion... Press ^C to stop.
+Your MySQL connection id is 11 (X protocol)
+Server version: 8.0.43 MySQL Community Server - GPL
+No default schema selected; type \use <schema> to set one.
+ MySQL  localhost:33060+ ssl  SQL > show databases;
++--------------------+
+| Database           |
++--------------------+
+| atm                |
+| college            |
+| company            |
+| delta_app          |
+| employee           |
+| galaxy             |
+| information_schema |
+| khushi             |
+| learning           |
+| library_db         |
+| mysql              |
+| performance_schema |
+| sakila             |
+| sample             |
+| school             |
+| sys                |
+| world              |
++--------------------+
+17 rows in set (0.0016 sec)
+ MySQL  localhost:33060+ ssl  SQL > use library_db;
+Default schema set to `library_db`.
+Fetching global names, object names from `library_db` for auto-completion... Press ^C to stop.
+ MySQL  localhost:33060+ ssl  library_db  SQL > CREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100)             CREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),            CREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHCREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHCREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHCREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHCREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHCREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(100),author VARCHAR(100), available BOOLEAN DEFAULT TRUE);
+Query OK, 0 rows affected (0.0297 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL > CREATE TABLE issue(id INT AUTO_INCREMENT PRIMARY KEY, book_id INT,issue_date DATE,return_date DATE, FOREIGN KEY (book_id) REFERENCES books(id));
+Query OK, 0 rows affected (0.0345 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL > desc books;
++-----------+--------------+------+-----+---------+----------------+
+| Field     | Type         | Null | Key | Default | Extra          |
++-----------+--------------+------+-----+---------+----------------+
+| id        | int          | NO   | PRI | NULL    | auto_increment |
+| title     | varchar(100) | YES  |     | NULL    |                |
+| author    | varchar(100) | YES  |     | NULL    |                |
+| available | tinyint(1)   | YES  |     | 1       |                |
++-----------+--------------+------+-----+---------+----------------+
+4 rows in set (0.0031 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL > desc issue;
++-------------+------+------+-----+---------+----------------+
+| Field       | Type | Null | Key | Default | Extra          |
++-------------+------+------+-----+---------+----------------+
+| id          | int  | NO   | PRI | NULL    | auto_increment |
+| book_id     | int  | YES  | MUL | NULL    |                |
+| issue_date  | date | YES  |     | NULL    |                |
+| return_date | date | YES  |     | NULL    |                |
++-------------+------+------+-----+---------+----------------+
+4 rows in set (0.0031 sec)
+ 
+ MySQL  localhost:33060+ ssl  library_db  SQL > SHOW tables;
++----------------------+
+| Tables_in_library_db |
++----------------------+
+| books                |
+| issue                |
++----------------------+
+2 rows in set (0.0028 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL >
+ MySQL  localhost:33060+ ssl  library_db  SQL > select*from books;
++----+-------+--------+-----------+
+| id | title | author | available |
++----+-------+--------+-----------+
+|  1 | DBMS  | Korth  |         1 |
++----+-------+--------+-----------+
+1 row in set (0.0010 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL > select*from books;
++----+-------+--------+-----------+
+| id | title | author | available |
++----+-------+--------+-----------+
+|  1 | DBMS  | Korth  |         0 |
++----+-------+--------+-----------+
+1 row in set (0.0006 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL >

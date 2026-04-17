@@ -1,0 +1,95 @@
+ MySQL  localhost:33060+ ssl  library_db  SQL > CREATE DATABASE library;
+Query OK, 1 row affected (0.0125 sec)
+ MySQL  localhost:33060+ ssl  library_db  SQL > USE library;
+Default schema set to `library`.
+Fetching global names, object names from `library` for auto-completion... Press ^C to stop.
+ MySQL  localhost:33060+ ssl  library  SQL > CREATE TABLE books(id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255),author VARCHAR(255),description TEXT,image VARCHAR(255),available BOOLEAN DEFAULT TRUE);
+Query OK, 0 rows affected (0.0354 sec)
+ MySQL  localhost:33060+ ssl  library  SQL > CREATE TABLE issue(id INT AUTO_INCREMENT PRIMARY KEY,book_id INT,issue_date DATE, return_date DATE);
+Query OK, 0 rows affected (0.0305 sec)
+ MySQL  localhost:33060+ ssl  library  SQL > DESC books;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| id          | int          | NO   | PRI | NULL    | auto_increment |
+| title       | varchar(255) | YES  |     | NULL    |                |
+| author      | varchar(255) | YES  |     | NULL    |                |
+| description | text         | YES  |     | NULL    |                |
+| image       | varchar(255) | YES  |     | NULL    |                |
+| available   | tinyint(1)   | YES  |     | 1       |                |
++-------------+--------------+------+-----+---------+----------------+
+6 rows in set (0.0029 sec)
+ MySQL  localhost:33060+ ssl  library  SQL > DESC issue;
++-------------+------+------+-----+---------+----------------+
+| Field       | Type | Null | Key | Default | Extra          |
++-------------+------+------+-----+---------+----------------+
+| id          | int  | NO   | PRI | NULL    | auto_increment |
+| book_id     | int  | YES  |     | NULL    |                |
+| issue_date  | date | YES  |     | NULL    |                |
+| return_date | date | YES  |     | NULL    |                |
++-------------+------+------+-----+---------+----------------+
+4 rows in set (0.0034 sec)
+ MySQL  localhost:33060+ ssl  library  SQL >
+ MySQL  localhost:33060+ ssl  library  SQL > show tables;
++-------------------+
+| Tables_in_library |
++-------------------+
+| books             |
+| issue             |
++-------------------+
+2 rows in set (0.0023 sec)
+ MySQL  localhost:33060+ ssl  library  SQL >
+ MySQL  localhost:33060+ ssl  library  SQL > select*from books;
++----+-----------------------------------------+-------------------------+-----------------------------------------------------------------------+---------------------------+-----------+
+| id | title                                   | author                  | description                                                           | image                     | available |
++----+-----------------------------------------+-------------------------+-----------------------------------------------------------------------+---------------------------+-----------+
+|  2 | Atomic Habits                           | James Clear             | Tiny Changes, Remarkable Results.                                     | /images/1774890961428.jpg |         1 |
+|  3 | How to win Friends and Influence People | Dale Carnegie           | Become Social                                                         | /images/1774891040137.jpg |         1 |
+|  4 | Diary of a Wimpy Kid                    | Jeff Kinney             | A novel in Cartoons                                                   | /images/1774891133008.jpg |         1 |
+|  5 | Rich Dad Poor Dad                       | Robert T. Kiyosaki      | What the Rich Teach their Kids that the Poor and Middle Class do not! | /images/1774891238989.jpg |         1 |
+|  6 | Wings of Fire                           | Dr. APJ Abdul Kalam     | Autobiography of Great leader and Scientist of India                  | /images/1774891341296.jpg |         1 |
+|  7 | We should all be Feminist               | Chimamanda Ngozi Adichi | Feminism is not just about Females but EQUALITY!                      | /images/1774891501894.jpg |         1 |
+|  8 | Title of Book                           | Author                  | Description                                                           |                           |         1 |
+|  9 | Sample Book                             | Sample Author           | This is a Sample                                                      | /images/1774891596564.jpg |         1 |
+| 10 | BOOK 26                                 | 26 Author               | Sample test                                                           | /images/1774891659803.pdf |         1 |
+| 11 | Demo                                    | Demo Name               | Demo Descritption                                                     | /images/1774891741410.png |         1 |
++----+-----------------------------------------+-------------------------+-----------------------------------------------------------------------+---------------------------+-----------+
+10 rows in set (0.0025 sec)
+ MySQL  localhost:33060+ ssl  library  SQL > select*from issue;
++----+---------+------------+-------------+
+| id | book_id | issue_date | return_date |
++----+---------+------------+-------------+
+|  1 |       1 | 2026-03-30 | 2026-03-30  |
++----+---------+------------+-------------+
+1 row in set (0.0011 sec)
+ MySQL  localhost:33060+ ssl  library  SQL >
+MySQL  localhost:33060+ ssl  library  SQL > CREATE TABLE users (
+                                          ->   id INT AUTO_INCREMENT PRIMARY KEY,
+                                          ->   name VARCHAR(100) NOT NULL,
+                                          ->   email VARCHAR(100) NOT NULL UNIQUE,
+                                          ->   password VARCHAR(255) NOT NULL,
+                                          ->   role ENUM('admin','student') NOT NULL DEFAULT 'student',
+                                          ->   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                          -> );
+Query OK, 0 rows affected (0.0485 sec)
+ MySQL  localhost:33060+ ssl  library  SQL > DESC users;
++------------+-------------------------+------+-----+-------------------+-------------------+
+| Field      | Type                    | Null | Key | Default           | Extra             |
++------------+-------------------------+------+-----+-------------------+-------------------+
+| id         | int                     | NO   | PRI | NULL              | auto_increment    |
+| name       | varchar(100)            | NO   |     | NULL              |                   |
+| email      | varchar(100)            | NO   | UNI | NULL              |                   |
+| password   | varchar(255)            | NO   |     | NULL              |                   |
+| role       | enum('admin','student') | NO   |     | student           |                   |
+| created_at | timestamp               | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++------------+-------------------------+------+-----+-------------------+-------------------+
+6 rows in set (0.0036 sec)
+  MySQL  localhost:33060+ ssl  library  SQL > select*from users;
++----+--------------+------------------+--------------------------------------------------------------+---------+---------------------+
+| id | name         | email            | password                                                     | role    | created_at          |
++----+--------------+------------------+--------------------------------------------------------------+---------+---------------------+
+|  1 | Khushi Yadav | khushi@gmail.com | $2b$10$WWsKa7i7kBH5gxx0XZq9peIq2rAsfRrRtZR/VNxzEbldQVkf6TUDe | student | 2026-03-31 15:19:55 |
+|  2 | Admin1       | admin@gmail.com  | $2b$10$g0e4L9fkUQ.O05q.F76XQuYC4UdjHNukUu5Um/W5BuLpa2tBKRhPa | admin   | 2026-03-31 15:28:00 |
++----+--------------+------------------+--------------------------------------------------------------+---------+---------------------+
+2 rows in set (0.0010 sec)
+ MySQL  localhost:33060+ ssl  library  SQL >

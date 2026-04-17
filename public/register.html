@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - Library</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    width: 360px;
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .roles {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .role-box {
+    flex: 1;
+    padding: 12px;
+    margin: 0 5px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+
+  .role-box.selected {
+    border-color: #4f46e5;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    transition: border 0.3s;
+  }
+
+  input:focus {
+    border-color: #4f46e5;
+    outline: none;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #4f46e5;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #3b38b8;
+  }
+
+  .link {
+    margin-top: 12px;
+    display: block;
+    color: #4f46e5;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .link:hover {
+    text-decoration: underline;
+  }
+
+  #toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: white;
+    display: none;
+    z-index: 9999;
+    font-weight: 500;
+    text-align: center;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Register</h2>
+
+  <!-- Role selection on top -->
+  <div class="roles">
+    <div class="role-box selected" data-role="student">Student</div>
+    <div class="role-box" data-role="admin">Admin</div>
+  </div>
+
+  <input type="text" id="name" placeholder="Full Name" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button id="registerBtn">Register</button>
+  <a href="login.html" class="link">Already have an account? Login</a>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const roleBoxes = document.querySelectorAll('.role-box');
+  let selectedRole = 'student';
+
+  roleBoxes.forEach(box => {
+    box.addEventListener('click', () => {
+      roleBoxes.forEach(b => b.classList.remove('selected'));
+      box.classList.add('selected');
+      selectedRole = box.dataset.role;
+    });
+  });
+
+  function showToast(msg, type='success'){
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.style.backgroundColor = type==='success'?'#4CAF50':'#f44336';
+    toast.style.display='block';
+    toast.style.opacity='1';
+    setTimeout(()=>{
+      toast.style.transition='opacity 0.5s';
+      toast.style.opacity='0';
+      setTimeout(()=>toast.style.display='none',500);
+    },2500);
+  }
+
+  document.getElementById('registerBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if(!name||!email||!password){ showToast('All fields required','error'); return; }
+
+    try{
+      const res = await fetch('/register',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name,email,password,role:selectedRole})
+      });
+      const data = await res.json();
+      if(data.error) showToast(data.error,'error');
+      else{
+        showToast('Registered successfully! Redirecting to login...','success');
+        setTimeout(()=>{ window.location.href='login.html'; },1000);
+      }
+    }catch(err){
+      showToast('Server error','error');
+      console.error(err);
+    }
+  });
+</script>
+
+</body>
+</html>

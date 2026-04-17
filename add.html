@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Book</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  
+
+<div class="sidebar" id="sidebar">
+  <h2><i class="fa-solid fa-book"></i> Library</h2>
+  <a href="index.html">Dashboard</a>
+  <a href="add.html">Add Book</a>
+  <a href="books.html">View Books</a>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    <h2>Add Book</h2>
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+    &nbsp; &nbsp; 
+   
+    
+
+    <h2></h2>
+  </div>
+    <!-- Toast Message -->
+  <div id="toast" style="
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      display: none;
+      z-index: 9999;
+      text-align:center;
+  "></div>
+
+
+<!-- Center Form -->
+<div class="form-container">
+  <form id="bookForm" enctype="multipart/form-data">
+    <h2>Add Book</h2>
+
+    <input type="text" id="title" placeholder="Title" required>
+    <input type="text" id="author" placeholder="Author" required>
+    <textarea id="description" placeholder="Description"></textarea>
+
+    <!-- Upload -->
+    <label>Upload Image</label>
+    <input type="file" id="image" name="image">
+    <div style="text-align:center; margin:10px 0; color:#999;">— OR —</div>
+
+    <!-- OR URL -->
+    <label>Image URL</label>
+    <input type="text" id="imageUrl" placeholder="Paste Image URL">
+
+    <button type="submit">Add Book</button>
+  </form>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
