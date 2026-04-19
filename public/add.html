@@ -6,13 +6,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-  
     .topbar {
       display: flex;
       align-items: center;
       gap: 15px;
     }
   </style>
+
   <script src="js/auth.js"></script>
 </head>
 
@@ -33,14 +33,11 @@
     <h2>Add Book</h2>
   </div>
 
-  
- 
-
-
   <div class="form-container">
     <form id="bookForm" enctype="multipart/form-data">
-      <h2>Add Book</h2>
-       <div id="toast"></div>
+      <h2 id="formTitle">Add Book</h2>
+
+      <div id="toast"></div>
 
       <input type="text" id="title" placeholder="Title" required>
       <input type="text" id="author" placeholder="Author" required>
@@ -54,37 +51,39 @@
       <label>Image URL</label>
       <input type="text" id="imageUrl" placeholder="Paste Image URL">
 
-      <button type="submit">Add Book</button>
+      <button type="submit" id="submitBtn">Add Book</button>
     </form>
   </div>
 </div>
 
 <script>
-  protectPage(["admin"]);
-  
+protectPage(["admin"]);
+
 const API = "/api/books";
 
+const params = new URLSearchParams(window.location.search);
+const bookId = params.get("id");
 
-function checkAuth() {
-  const token = localStorage.getItem("token");
+let isEdit = false;
 
-  if (!token) {
-    window.location.href = "/login.html";
-  }
+if (bookId) {
+  isEdit = true;
+  document.getElementById("formTitle").innerText = "Update Book";
+  document.getElementById("submitBtn").innerText = "Update Book";
+
+  fetch(`/api/books/${bookId}`, {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("title").value = data.title || "";
+      document.getElementById("author").value = data.author || "";
+      document.getElementById("description").value = data.description || "";
+      document.getElementById("imageUrl").value = data.image || "";
+    });
 }
-
-
-function showToast(msg, color="#4CAF50") {
-  const toast = document.getElementById("toast");
-  toast.innerText = msg;
-  toast.style.background = color;
-  toast.style.display = "block";
-
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2000);
-}
-
 
 document.getElementById("bookForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -95,7 +94,6 @@ document.getElementById("bookForm").addEventListener("submit", async (e) => {
   const author = document.getElementById("author").value;
   const description = document.getElementById("description").value;
   const imageUrl = document.getElementById("imageUrl").value;
-
   const imageFile = document.getElementById("image").files[0];
 
   const formData = new FormData();
@@ -105,37 +103,36 @@ document.getElementById("bookForm").addEventListener("submit", async (e) => {
   formData.append("imageUrl", imageUrl);
   if (imageFile) formData.append("image", imageFile);
 
-  try {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + token
-      },
-      body: formData
-    });
+  const url = isEdit ? `/api/books/${bookId}` : API;
+  const method = isEdit ? "PUT" : "POST";
 
-    const data = await res.json();
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Authorization": "Bearer " + token
+    },
+    body: formData
+  });
 
-    if (res.ok) {
-      showToast("Book Added Successfully!");
-      document.getElementById("bookForm").reset();
-    } else {
-      showToast(data.message || "Error", "red");
-    }
+  const data = await res.json();
 
-  } catch (err) {
-    console.log(err);
-    showToast("Server Error", "red");
+  if (res.ok) {
+    alert(isEdit ? "Book Updated Successfully!" : "Book Added Successfully!");
+    if (!isEdit) document.getElementById("bookForm").reset();
+    setTimeout(() => {
+  window.location.href = "books.html";
+}, 300);
+
+  } else {
+    alert(data.message || "Error");
   }
 });
-
 
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("hide");
 }
 
-
-checkAuth();
+protectPage(["admin"]);
 </script>
 
 </body>

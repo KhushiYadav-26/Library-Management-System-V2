@@ -166,6 +166,7 @@
       border-radius: 8px;
     }
   </style>
+
   <script src="js/auth.js"></script>
 </head>
 
@@ -217,7 +218,8 @@
 </div>
 
 <script>
-  protectPage(["student", "admin"]);
+protectPage(["student", "admin"]);
+
 const API = "/api/books";
 let allBooks = [];
 let userRole = "student";
@@ -293,9 +295,11 @@ function displayBooks(books) {
   container.innerHTML = "";
 
   books.forEach(b => {
+    const imageUrl = b.image || "https://via.placeholder.com/150";
+
     container.innerHTML += `
       <div class="card">
-        <img src="${b.image}">
+        <img src="${imageUrl}">
         <h3>${b.title}</h3>
         <p>${b.description || ""}</p>
         <p><b>${b.author}</b></p>

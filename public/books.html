@@ -4,7 +4,6 @@
   <title>Books</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
@@ -52,10 +51,6 @@
     .search-box .bi-search { left: 12px; }
     .search-box .bi-x-circle { right: 12px; cursor: pointer; display: none; }
 
-    .search-box input:not(:placeholder-shown) ~ .bi-x-circle {
-      display: block;
-    }
-
     .search-wrapper button {
       padding: 10px 16px;
       border-radius: 12px;
@@ -84,6 +79,7 @@
       text-align:center;
     }
   </style>
+
   <script src="js/auth.js"></script>
 </head>
 
@@ -127,27 +123,23 @@
 </div>
 
 <script>
-  protectPage(["admin"]);
+protectPage(["admin"]);
+
 const API = "/api/books";
 
 function getToken() {
   return localStorage.getItem("token");
 }
 
-
 function authFetch(url, options = {}) {
-  const token = getToken();
-
   return fetch(url, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
       ...(options.headers || {}),
-      Authorization: `Bearer ${token}`
+      Authorization: "Bearer " + getToken()
     }
   });
 }
-
 
 function checkAuth() {
   if (!getToken()) {
@@ -155,20 +147,16 @@ function checkAuth() {
   }
 }
 
-
 function showToast(message, type="success") {
   const toast = document.getElementById("toast");
   toast.innerText = message;
   toast.style.backgroundColor = type === "success" ? "#4CAF50" : "#f44336";
   toast.style.display = "block";
-  toast.style.opacity = "1";
 
   setTimeout(() => {
-    toast.style.opacity = "0";
-    setTimeout(() => toast.style.display = "none", 500);
+    toast.style.display = "none";
   }, 2500);
 }
-
 
 function loadBooks() {
   authFetch(API)
@@ -177,13 +165,10 @@ function loadBooks() {
       return res.json();
     })
     .then(data => renderTable(data))
-    .catch((err) => {
+    .catch(() => {
       console.log(err);
-  
-  
-});
+    });
 }
-
 
 function renderTable(data) {
   const table = document.getElementById("bookTable");
@@ -207,7 +192,7 @@ function renderTable(data) {
     table.innerHTML += `
       <tr>
         <td>${book.id}</td>
-        <td><img src="${book.image}" width="60"></td>
+        <td><img src="${book.image}" width="60" onerror="this.src='https://via.placeholder.com/60'"></td>
         <td>${book.title}</td>
         <td>${book.author}</td>
         <td>
@@ -218,7 +203,6 @@ function renderTable(data) {
     `;
   });
 }
-
 
 function searchBooks() {
   const query = document.getElementById("search").value.trim();
@@ -231,16 +215,14 @@ function searchBooks() {
     .catch(() => showToast("Search failed", "error"));
 }
 
-
 function clearSearch() {
   document.getElementById("search").value = "";
   loadBooks();
 }
 
 function editBook(id) {
-  window.location.href = `add.html?id=${id}`;
+  window.location.href = "add.html?id=" + id;
 }
-
 
 function deleteBook(id) {
   authFetch(`${API}/${id}`, { method: "DELETE" })
@@ -252,11 +234,9 @@ function deleteBook(id) {
     .catch(() => showToast("Delete failed", "error"));
 }
 
-
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("hide");
 }
-
 
 checkAuth();
 loadBooks();
