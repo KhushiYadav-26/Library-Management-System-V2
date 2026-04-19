@@ -2,12 +2,19 @@
 <html>
 <head>
   <title>Dashboard</title>
+
   <link rel="stylesheet" href="css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-   <style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .user-info {
+      margin-left: auto;
+      margin-right: 20px;
+      font-weight: bold;
+    }
+
     .logout-btn {
-      float: right;
       margin-right: 20px;
       padding: 8px 16px;
       background: #f44336;
@@ -15,25 +22,24 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .logout-btn:hover {
-      background: #d32f2f;
-      transform: scale(1.05);
     }
 
+   /* SEARCH WRAPPER (MATCH BOOKS UI) */
     .search-wrapper {
-      margin: 20px 0;
+      margin: 20px;
       display: flex;
       justify-content: flex-start;
+      flex-wrap: nowrap;
       align-items: center;
       gap: 10px;
+      overflow-x: auto;
+      animation: fadeInUp 0.4s ease;
     }
 
     .search-box {
       position: relative;
       width: 320px;
+      margin-left: 30px;
     }
 
     .search-box input {
@@ -46,7 +52,7 @@
     }
 
     .search-box input:focus {
-      border-color: var(--primary, #4f46e5);
+      border-color: #4f46e5;
       box-shadow: 0 0 10px rgba(79,70,229,0.3);
       outline: none;
     }
@@ -55,92 +61,321 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--muted, #999);
+      color: #999;
       font-size: 16px;
     }
 
-    .search-box .bi-search { left: 12px; }
+    .bi-search { left: 12px; }
 
-    .search-box .bi-x-circle {
+    .bi-x-circle {
       right: 12px;
       cursor: pointer;
-      display: none;
     }
 
-    .search-box input:not(:placeholder-shown) ~ .bi-x-circle {
-      display: block;
-    }
-
+    /* BUTTONS (MATCH BOOKS PAGE COLOR) */
     .search-wrapper button {
       padding: 10px 16px;
       border-radius: 12px;
       border: none;
-      background-color: var(--primary, #4f46e5);
+      background-color: #4f46e5;
       color: white;
       cursor: pointer;
       font-weight: 500;
       transition: 0.3s;
+      white-space: nowrap;
     }
 
     .search-wrapper button:hover {
       background-color: #3b38b8;
     }
+    .filter-container {
+      position: relative;
+    }
+
+    .filter-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+    }
+
+    .filter-menu {
+      position: absolute;
+      top: 45px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 180px;
+      z-index: 10;
+    }
+
+    .filter-menu p {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .filter-menu p:hover { background: #eee; }
+
+    .hidden { display: none; }
+
+    /* CARDS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .card button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4f46e5;
+      color: white;
+    }
+
+    .issued {
+      background: gray !important;
+      cursor: not-allowed;
+    }
+    .user-info {
+  margin-left: auto;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  background: #f4f6ff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: #333;
+  flex-wrap: wrap;
+}
+
+.user-badge span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.user-badge i {
+  color: #4f46e5;
+}
+
+.user-chip {
+  background: #4f46e5 !important;
+  color: white !important;
+  border: none !important;
+  text-transform: capitalize;
+}
   </style>
 </head>
+
 <body>
 
 <!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
+<div class="sidebar">
   <h2><i class="fa-solid fa-book"></i> Library</h2>
   <a href="index.html">Dashboard</a>
   <a href="add.html">Add Book</a>
   <a href="books.html">View Books</a>
+  <a href="admin-reports.html">Report</a>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <span class="hamburger" onclick="toggleSidebar()">☰</span>
     <h2>Dashboard</h2>
-    <h2 style="margin-left:auto;"></h2>
+
+    <div class="user-info" id="userInfo">Loading...</div>
+
+    <div class="filter-container">
+      <button class="filter-btn" onclick="toggleFilterMenu()">Filters</button>
+
+      <div id="filterMenu" class="filter-menu hidden">
+        <p onclick="applyFilter('all')">All</p>
+        <p onclick="applyFilter('available')">Available</p>
+        <p onclick="applyFilter('issued')">Issued</p>
+      </div>
+    </div>
+
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
-  <!-- CONTENT -->
   <div class="content">
-    <!-- SEARCH BAR -->
+
     <div class="search-wrapper">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input 
-          type="text" 
-          id="search" 
-          placeholder="Search books..." 
-          onkeyup="searchBooks()"   
-        >
+        <input type="text" id="search" placeholder="Search books..." onkeyup="searchBooks()">
         <i class="bi bi-x-circle" onclick="clearSearch()"></i>
       </div>
+
       <button onclick="searchBooks()">Search</button>
-      
     </div>
 
     <div id="bookContainer" class="grid"></div>
-  </div>
 
+  </div>
 </div>
 
-<script src="js/main.js"></script>
 <script>
-  // Logout function
-  function logout() {
-    fetch('/logout')
-      .then(() => {
-        window.location.href = '/login';
-      })
-      .catch(err => console.error(err));
+let allBooks = [];
+let userRole = "student";
+
+function checkLogin() {
+  fetch('/api/user')
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+        document.getElementById("userInfo").innerHTML = `
+  <div class="user-badge">
+
+    <span>
+      
+      <b>Name:</b> ${data.name}
+      <i class="fa-solid fa-user"></i>
+    </span>
+
+    <span>
+     
+      <b>ID:</b> ${data.id}
+    </span>
+
+    <span class="user-chip">
+      ${data.role}
+    </span>
+
+  </div>
+`;
+      userRole = data.role;
+    })
+    .catch(() => window.location.href = "/login");
+}
+
+function loadBooks() {
+  fetch('/api/books')
+    .then(res => res.json())
+    .then(data => {
+      allBooks = data;
+      displayBooks(data);
+    });
+}
+
+function displayBooks(books) {
+  const container = document.getElementById("bookContainer");
+  container.innerHTML = "";
+
+  books.forEach(b => {
+    container.innerHTML += `
+      <div class="card">
+        <img src="${b.image}">
+        <h3>${b.title}</h3>
+        <p>${b.description || "No description available"}</p>
+        <p><b>${b.author}</b></p>
+
+        <button
+          class="${b.issued ? 'issued' : ''}"
+          onclick="handleIssue(${b.id})"
+          ${b.issued ? 'disabled' : ''}
+        >
+          ${b.issued ? 'Issued' : 'Issue'}
+        </button>
+      </div>
+    `;
+  });
+}
+
+function handleIssue(bookId) {
+  if (userRole !== "admin") {
+    alert("Only admin can issue books. Students can only view.");
+    return;
   }
+
+  const userId = prompt("Enter User ID:");
+  if (!userId) return;
+
+  fetch('/api/issue', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, book_id: bookId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    loadBooks();
+  });
+}
+
+function searchBooks() {
+  const q = document.getElementById("search").value.toLowerCase();
+  displayBooks(allBooks.filter(b =>
+    b.title.toLowerCase().includes(q) ||
+    b.author.toLowerCase().includes(q)
+  ));
+}
+
+function clearSearch() {
+  document.getElementById("search").value = "";
+  displayBooks(allBooks);
+}
+
+function applyFilter(type) {
+  let filtered = allBooks;
+
+  if (type === "available") filtered = allBooks.filter(b => !b.issued);
+  if (type === "issued") filtered = allBooks.filter(b => b.issued);
+
+  displayBooks(filtered);
+}
+
+function toggleFilterMenu() {
+  document.getElementById("filterMenu").classList.toggle("hidden");
+}
+
+function logout() {
+  fetch('/logout').then(() => window.location.href = "/login");
+}
+
+function toggleSidebar() {
+  document.querySelector(".sidebar").classList.toggle("hide");
+}
+
+checkLogin();
+loadBooks();
 </script>
+
 </body>
 </html>

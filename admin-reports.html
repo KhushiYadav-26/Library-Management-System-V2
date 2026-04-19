@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Report</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* SEARCH WRAPPER (MATCH BOOKS UI) */
+    .search-wrapper {
+      margin: 20px;
+      display: flex;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .search-box {
+      position: relative;
+      width: 320px;
+      margin-left: 30px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 40px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 10px rgba(79,70,229,0.3);
+      outline: none;
+    }
+
+    .search-box i {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
+    }
+
+    .bi-search { left: 12px; }
+
+    .bi-x-circle {
+      right: 12px;
+      cursor: pointer;
+    }
+
+    /* BUTTONS (MATCH BOOKS PAGE COLOR) */
+    .search-wrapper button {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: none;
+      background-color: #4f46e5;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+      white-space: nowrap;
+    }
+
+    .search-wrapper button:hover {
+      background-color: #3b38b8;
+    }
+
+    /* FILTER BUTTON */
+    .filter-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: none;
+      background: #6d28d9;
+      color: white;
+      cursor: pointer;
+    }
+
+    .filter-menu {
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-top: 5px;
+      width: 160px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+
+    .filter-menu p {
+      padding: 10px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .filter-menu p:hover {
+      background: #f3f3f3;
+    }
+    .filter-select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  outline: none;
+  min-width: 140px;
+}
+
+/* on focus */
+.filter-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 8px rgba(79,70,229,0.3);
+}
+
+    .hidden { display: none; }
+
+    /* TABLE */
+    table {
+      width: 90%;
+      border-collapse: collapse;
+      margin: 50px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #4f46e5;
+      color: white;
+      padding: 12px;
+    }
+
+    td {
+      padding: 10px;
+      border: 1px solid #eee;
+      text-align: center;
+    }
+
+    /* RETURN BUTTON */
+    .return-btn {
+      padding: 6px 10px;
+      border: none;
+      background: green;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .return-btn:hover {
+      background: darkgreen;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <h2><i class="fa-solid fa-book"></i> Library</h2>
+  <a href="index.html">Dashboard</a>
+  <a href="add.html">Add Book</a>
+  <a href="books.html">View Books</a>
+  <a href="admin-reports.html">Report</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="topbar">
+    <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    <h2>Admin Report</h2>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <!-- SEARCH + FILTER -->
+  <div class="search-wrapper">
+
+    <div class="search-box">
+      <i class="bi bi-search"></i>
+      <input type="text" id="search" placeholder="Search user or book...">
+      <i class="bi bi-x-circle" onclick="clearSearch()"></i>
+    </div>
+
+    <button onclick="applySearch()">Search</button>
+    <button onclick="loadData()">Reset</button>
+
+    <!--FILTER-->
+    <div class="filter-container">
+
+  <select class="filter-select" onchange="filterData(this.value)">
+    <option value="all">All</option>
+    <option value="issued">Issued</option>
+    <option value="returned">Returned</option>
+  </select>
+
+</div>
+
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Book</th>
+        <th>Author</th>
+        <th>Issue Date</th>
+        <th>Return Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody id="data"></tbody>
+  </table>
+
+</div>
+
+<script>
+let allData = [];
+
+/* LOAD */
+function loadData() {
+  fetch('/api/admin/issues')
+    .then(res => res.json())
+    .then(data => {
+      allData = data;
+      displayData(data);
+    });
+}
+
+/* DISPLAY */
+function displayData(data) {
+  const table = document.getElementById("data");
+  table.innerHTML = "";
+
+  data.forEach(d => {
+    table.innerHTML += `
+      <tr>
+        <td>${d.user_id}</td>
+        <td>${d.name}</td>
+        <td>${d.email}</td>
+        <td>${d.title}</td>
+        <td>${d.author}</td>
+        <td>${format(d.issue_date)}</td>
+        <td>${d.return_date ? format(d.return_date) : 'Not Returned'}</td>
+        <td>
+          ${!d.return_date 
+            ? `<button class="return-btn" onclick="returnBook(${d.book_id})">Return</button>`
+            : '-'}
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* FORMAT DATE */
+function format(date) {
+  return date ? new Date(date).toLocaleDateString('en-GB') : '-';
+}
+
+/* SEARCH */
+function applySearch() {
+  const q = document.getElementById("search").value.toLowerCase();
+
+  const filtered = allData.filter(d =>
+    (d.name || '').toLowerCase().includes(q) ||
+    (d.title || '').toLowerCase().includes(q) ||
+    (d.email || '').toLowerCase().includes(q)
+  );
+
+  displayData(filtered);
+}
+
+/* CLEAR */
+function clearSearch() {
+  document.getElementById("search").value = "";
+  displayData(allData);
+}
+
+/* FILTER */
+function filterData(type) {
+  let filtered = allData;
+
+  if (type === "issued") {
+    filtered = allData.filter(d => !d.return_date);
+  }
+
+  if (type === "returned") {
+    filtered = allData.filter(d => d.return_date);
+  }
+
+  displayData(filtered);
+}
+
+/* RETURN */
+function returnBook(id) {
+  fetch('/api/return/' + id, { method: 'PUT' })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      loadData();
+    });
+}
+
+/* SIDEBAR */
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("hide");
+}
+
+/* INIT */
+loadData();
+</script>
+
+</body>
+</html>

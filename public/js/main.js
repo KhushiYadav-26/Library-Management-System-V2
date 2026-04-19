@@ -2,7 +2,30 @@ const API = "/api/books";
 const params = new URLSearchParams(window.location.search);
 const editId = params.get("id");
 
-// DASHBOARD CARDS 
+let allBooks = [];
+let currentFilter = "all";
+
+function filterBooks(type) {
+  currentFilter = type;
+  applyFilter();
+}
+
+function applyFilter() {
+  let filtered = [];
+
+  if (currentFilter === "available") {
+    filtered = allBooks.filter(book => book.available == 1);
+  } 
+  else if (currentFilter === "issued") {
+    filtered = allBooks.filter(book => book.available == 0);
+  } 
+  else {
+    filtered = allBooks;
+  }
+
+  renderCards(filtered);
+}
+
 if (document.getElementById("bookContainer")) {
   loadDashboardBooks();
 }
@@ -10,27 +33,21 @@ if (document.getElementById("bookContainer")) {
 function loadDashboardBooks() {
   fetch(API)
     .then(res => res.json())
-    .then(data => renderCards(data))
-    .catch(err => console.error("Failed to load dashboard books:", err));
+    .then(data => {
+      allBooks = data;
+      applyFilter();
+    });
 }
 
 function renderCards(data) {
   const container = document.getElementById("bookContainer");
   if (!container) return;
 
-  const existingCards = {};
-  container.querySelectorAll(".card").forEach(card => {
-    existingCards[card.dataset.id] = card;
-  });
+  container.innerHTML = "";
 
   data.forEach(book => {
-    let card = existingCards[book.id];
-    if (!card) {
-      card = document.createElement("div");
-      card.className = "card";
-      card.dataset.id = book.id;
-      container.appendChild(card);
-    }
+    const card = document.createElement("div");
+    card.className = "card";
 
     card.innerHTML = `
       <img src="${book.image}" alt="${book.title}">
@@ -41,24 +58,23 @@ function renderCards(data) {
         ${book.available ? 'Available' : 'Issued'}
       </span>
       <br>
-      <button onclick="${book.available ? `issue(${book.id})` : `returnBook(${book.id})`}">
-        ${book.available ? 'Issue' : 'Return'}
-      </button>
+
+      ${book.available ? `
+        <input type="number" id="uid-${book.id}" placeholder="User ID">
+        <button onclick="issueById(${book.id})">Issue</button>
+      ` : `
+        <button onclick="returnBook(${book.id})">Return</button>
+      `}
     `;
+
+    container.appendChild(card);
   });
 
-  // Remove cards not in data
-  const dataIds = data.map(b => String(b.id));
-  container.querySelectorAll(".card").forEach(card => {
-    if (!dataIds.includes(card.dataset.id)) container.removeChild(card);
-  });
-
-  if (!data || data.length === 0) {
+  if (data.length === 0) {
     container.innerHTML = "<p style='text-align:center'>No books found!</p>";
   }
 }
 
-// TABLE 
 if (document.getElementById("bookTable")) {
   loadBooks();
 }
@@ -66,8 +82,7 @@ if (document.getElementById("bookTable")) {
 function loadBooks() {
   fetch(API)
     .then(res => res.json())
-    .then(data => renderTable(data))
-    .catch(err => console.error("Failed to load books:", err));
+    .then(data => renderTable(data));
 }
 
 function renderTable(data) {
@@ -75,22 +90,14 @@ function renderTable(data) {
   if (!table) return;
 
   const tbody = table.querySelector("tbody") || table;
-  const existingRows = {};
-  tbody.querySelectorAll("tr[data-id]").forEach(row => {
-    existingRows[row.dataset.id] = row;
-  });
+  tbody.innerHTML = "";
 
   data.forEach(book => {
-    let row = existingRows[book.id];
-    if (!row) {
-      row = document.createElement("tr");
-      row.dataset.id = book.id;
-      tbody.appendChild(row);
-    }
+    const row = document.createElement("tr");
 
     row.innerHTML = `
       <td>${book.id}</td>
-      <td><img src="${book.image}" width="60" alt="${book.title}"></td>
+      <td><img src="${book.image}" width="60"></td>
       <td>${book.title}</td>
       <td>${book.author}</td>
       <td>
@@ -98,20 +105,15 @@ function renderTable(data) {
         <button onclick="deleteBook(${book.id})">Delete</button>
       </td>
     `;
+
+    tbody.appendChild(row);
   });
 
-  // Remove rows not in data
-  const dataIds = data.map(b => String(b.id));
-  tbody.querySelectorAll("tr[data-id]").forEach(row => {
-    if (!dataIds.includes(row.dataset.id)) tbody.removeChild(row);
-  });
-
-  if (!data || data.length === 0) {
+  if (data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center">No books found!</td></tr>`;
   }
 }
 
-// SEARCH DASHBOARD / TABLE 
 const searchInput = document.getElementById("search");
 if (searchInput) {
   let debounceTimer;
@@ -125,8 +127,8 @@ function searchBooks() {
   const query = searchInput.value.trim();
 
   if (!query) {
-    if (document.getElementById("bookContainer")) loadDashboardBooks();
-    if (document.getElementById("bookTable")) loadBooks();
+    loadDashboardBooks();
+    loadBooks();
     return;
   }
 
@@ -134,18 +136,16 @@ function searchBooks() {
     .then(res => res.json())
     .then(data => {
       if (document.getElementById("bookContainer")) renderCards(data);
-      else if (document.getElementById("bookTable")) renderTable(data);
-    })
-    .catch(err => console.error("Search failed:", err));
+      if (document.getElementById("bookTable")) renderTable(data);
+    });
 }
 
 function clearSearch() {
   if (!searchInput) return;
   searchInput.value = "";
-  searchBooks(); 
+  searchBooks();
 }
 
-//EDIT / DELETE 
 function editBook(id) {
   window.location.href = `add.html?id=${id}`;
 }
@@ -153,29 +153,47 @@ function editBook(id) {
 function deleteBook(id) {
   fetch(`${API}/${id}`, { method: "DELETE" })
     .then(() => {
-      if (document.getElementById("bookContainer")) loadDashboardBooks();
-      if (document.getElementById("bookTable")) loadBooks();
-    })
-    .catch(err => console.error("Delete failed:", err));
+      loadDashboardBooks();
+      loadBooks();
+      showToast("Deleted");
+    });
 }
 
-// ISSUE / RETURN 
-function issue(id) {
-  fetch(`/api/issue/${id}`, { method: "PUT" })
-    .then(() => loadDashboardBooks())
-    .catch(err => console.error("Issue failed:", err));
+function issueById(bookId) {
+  const userId = document.getElementById(`uid-${bookId}`).value;
+
+  if (!userId) {
+    showToast("Enter User ID", "error");
+    return;
+  }
+
+  fetch('/api/admin/issue-by-id', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      book_id: bookId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    showToast(data.message);
+    loadDashboardBooks();
+  });
 }
 
 function returnBook(id) {
   fetch(`/api/return/${id}`, { method: "PUT" })
-    .then(() => loadDashboardBooks())
-    .catch(err => console.error("Return failed:", err));
+    .then(() => {
+      loadDashboardBooks();
+      showToast("Returned");
+    });
 }
 
-// ADD + EDIT FORM 
 const form = document.getElementById("bookForm");
 if (form) {
-  // Load existing book for edit
   if (editId) {
     fetch(`${API}/${editId}`)
       .then(res => res.json())
@@ -183,16 +201,7 @@ if (form) {
         document.getElementById("title").value = book.title;
         document.getElementById("author").value = book.author;
         document.getElementById("description").value = book.description;
-
-        if (book.image) {
-          const img = document.createElement("img");
-          img.src = book.image;
-          img.style.width = "100px";
-          img.style.marginTop = "10px";
-          form.appendChild(img);
-        }
-      })
-      .catch(err => console.error("Failed to load book for edit:", err));
+      });
   }
 
   form.addEventListener("submit", e => {
@@ -205,42 +214,39 @@ if (form) {
 
     const imageInput = document.getElementById("image");
     const imageUrlInput = document.getElementById("imageUrl");
-    if (imageInput && imageInput.files.length > 0) formData.append("image", imageInput.files[0]);
-    else if (imageUrlInput) formData.append("imageUrl", imageUrlInput.value);
+
+    if (imageInput && imageInput.files.length > 0)
+      formData.append("image", imageInput.files[0]);
+    else if (imageUrlInput)
+      formData.append("imageUrl", imageUrlInput.value);
 
     const url = editId ? `${API}/${editId}` : API;
     const method = editId ? "PUT" : "POST";
 
     fetch(url, { method, body: formData })
       .then(res => res.json())
-      .then(data => {
-        alert(editId ? "Book Updated!" : "Book Added!");
+      .then(() => {
+        showToast(editId ? "Updated" : "Added");
         window.location.href = editId ? "books.html" : "index.html";
-      })
-      .catch(err => {
-        console.error("Form submit failed:", err);
-        alert("Something went wrong!");
       });
   });
 }
 
-//  TOAST 
 function showToast(message, type = "success") {
   const toast = document.getElementById("toast");
   if (!toast) return;
+
   toast.innerText = message;
   toast.style.backgroundColor = type === "success" ? "#4CAF50" : "#f44336";
   toast.style.display = "block";
   toast.style.opacity = "1";
 
   setTimeout(() => {
-    toast.style.transition = "opacity 0.5s";
     toast.style.opacity = "0";
     setTimeout(() => (toast.style.display = "none"), 500);
   }, 2500);
 }
 
-// SIDEBAR TOGGLE 
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   sidebar.classList.toggle("hide");
