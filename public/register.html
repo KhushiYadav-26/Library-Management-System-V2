@@ -114,12 +114,12 @@
   }
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <h2>Register</h2>
 
-  <!-- Role selection on top -->
   <div class="roles">
     <div class="role-box selected" data-role="student">Student</div>
     <div class="role-box" data-role="admin">Admin</div>
@@ -128,6 +128,7 @@
   <input type="text" id="name" placeholder="Full Name" required>
   <input type="email" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
+
   <button id="registerBtn">Register</button>
   <a href="login.html" class="link">Already have an account? Login</a>
 </div>
@@ -149,9 +150,10 @@
   function showToast(msg, type='success'){
     const toast = document.getElementById('toast');
     toast.innerText = msg;
-    toast.style.backgroundColor = type==='success'?'#4CAF50':'#f44336';
+    toast.style.backgroundColor = type==='success' ? '#4CAF50' : '#f44336';
     toast.style.display='block';
     toast.style.opacity='1';
+
     setTimeout(()=>{
       toast.style.transition='opacity 0.5s';
       toast.style.opacity='0';
@@ -164,23 +166,37 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    if(!name||!email||!password){ showToast('All fields required','error'); return; }
+    if(!name || !email || !password){
+      showToast('All fields required','error');
+      return;
+    }
 
     try{
       const res = await fetch('/register',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({name,email,password,role:selectedRole})
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: selectedRole
+        })
       });
+
       const data = await res.json();
-      if(data.error) showToast(data.error,'error');
-      else{
-        showToast('Registered successfully! Redirecting to login...','success');
-        setTimeout(()=>{ window.location.href='login.html'; },1000);
+
+      if(data.error){
+        showToast(data.error,'error');
+      } else {
+        showToast('Registered successfully! Redirecting...','success');
+        setTimeout(()=>{
+          window.location.href='login.html';
+        },1000);
       }
-    }catch(err){
-      showToast('Server error','error');
+
+    } catch(err){
       console.error(err);
+      showToast('Server error','error');
     }
   });
 </script>

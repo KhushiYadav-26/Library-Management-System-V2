@@ -172,6 +172,7 @@
       z-index: 9999;
     }
   </style>
+  <script src="js/auth.js"></script>
 </head>
 
 <body>
@@ -208,16 +209,13 @@
     <button onclick="applySearch()">Search</button>
     <button onclick="loadData()">Reset</button>
 
-    <!--FILTER-->
     <div class="filter-container">
-
-  <select class="filter-select" onchange="filterData(this.value)">
-    <option value="all">All</option>
-    <option value="issued">Issued</option>
-    <option value="returned">Returned</option>
-  </select>
-
-</div>
+      <select class="filter-select" onchange="filterData(this.value)">
+        <option value="all">All</option>
+        <option value="issued">Issued</option>
+        <option value="returned">Returned</option>
+      </select>
+    </div>
 
   </div>
 
@@ -242,19 +240,49 @@
 </div>
 
 <script>
+  protectPage(["admin"]);
 let allData = [];
 
-/* LOAD */
+/* ===================== JWT HELPERS ===================== */
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function authHeader() {
+  return {
+    "Authorization": "Bearer " + getToken(),
+    "Content-Type": "application/json"
+  };
+}
+
+/* ===================== CHECK LOGIN ===================== */
+function checkLogin() {
+  if (!getToken()) {
+    window.location.href = "/login";
+  }
+}
+
+/* ===================== LOAD DATA ===================== */
 function loadData() {
-  fetch('/api/admin/issues')
-    .then(res => res.json())
+  fetch('/api/admin/issues', {
+    headers: {
+      "Authorization": "Bearer " + getToken()
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Unauthorized");
+      return res.json();
+    })
     .then(data => {
       allData = data;
       displayData(data);
-    });
+    })
+    .catch((err) => {
+     console.log(err);
+});
 }
 
-/* DISPLAY */
+/* ===================== DISPLAY ===================== */
 function displayData(data) {
   const table = document.getElementById("data");
   table.innerHTML = "";
@@ -279,12 +307,12 @@ function displayData(data) {
   });
 }
 
-/* FORMAT DATE */
+/* ===================== FORMAT DATE ===================== */
 function format(date) {
   return date ? new Date(date).toLocaleDateString('en-GB') : '-';
 }
 
-/* SEARCH */
+/* ===================== SEARCH ===================== */
 function applySearch() {
   const q = document.getElementById("search").value.toLowerCase();
 
@@ -297,13 +325,13 @@ function applySearch() {
   displayData(filtered);
 }
 
-/* CLEAR */
+/* ===================== CLEAR ===================== */
 function clearSearch() {
   document.getElementById("search").value = "";
   displayData(allData);
 }
 
-/* FILTER */
+/* ===================== FILTER ===================== */
 function filterData(type) {
   let filtered = allData;
 
@@ -318,9 +346,12 @@ function filterData(type) {
   displayData(filtered);
 }
 
-/* RETURN */
+/* ===================== RETURN BOOK ===================== */
 function returnBook(id) {
-  fetch('/api/return/' + id, { method: 'PUT' })
+  fetch('/api/return/' + id, {
+    method: 'PUT',
+    headers: authHeader()
+  })
     .then(res => res.json())
     .then(data => {
       alert(data.message);
@@ -328,12 +359,13 @@ function returnBook(id) {
     });
 }
 
-/* SIDEBAR */
+/* ===================== SIDEBAR ===================== */
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("hide");
 }
 
-/* INIT */
+/* ===================== INIT ===================== */
+checkLogin();
 loadData();
 </script>
 

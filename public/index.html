@@ -24,7 +24,6 @@
       cursor: pointer;
     }
 
-   /* SEARCH WRAPPER (MATCH BOOKS UI) */
     .search-wrapper {
       margin: 20px;
       display: flex;
@@ -66,13 +65,8 @@
     }
 
     .bi-search { left: 12px; }
+    .bi-x-circle { right: 12px; cursor: pointer; }
 
-    .bi-x-circle {
-      right: 12px;
-      cursor: pointer;
-    }
-
-    /* BUTTONS (MATCH BOOKS PAGE COLOR) */
     .search-wrapper button {
       padding: 10px 16px;
       border-radius: 12px;
@@ -81,16 +75,13 @@
       color: white;
       cursor: pointer;
       font-weight: 500;
-      transition: 0.3s;
-      white-space: nowrap;
     }
 
     .search-wrapper button:hover {
       background-color: #3b38b8;
     }
-    .filter-container {
-      position: relative;
-    }
+
+    .filter-container { position: relative; }
 
     .filter-btn {
       padding: 10px 16px;
@@ -111,16 +102,11 @@
       z-index: 10;
     }
 
-    .filter-menu p {
-      padding: 10px;
-      cursor: pointer;
-    }
-
+    .filter-menu p { padding: 10px; cursor: pointer; }
     .filter-menu p:hover { background: #eee; }
 
     .hidden { display: none; }
 
-    /* CARDS */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -156,52 +142,35 @@
       background: gray !important;
       cursor: not-allowed;
     }
+
     .user-info {
-  margin-left: auto;
-  margin-right: 20px;
-  display: flex;
-  align-items: center;
-  background: #f4f6ff;
-  padding: 10px 14px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
+      margin-left: auto;
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+      background: #f4f6ff;
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
 
-.user-badge {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 13px;
-  color: #333;
-  flex-wrap: wrap;
-}
+    .user-badge {
+      display: flex;
+      gap: 14px;
+      font-size: 13px;
+    }
 
-.user-badge span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: white;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-
-.user-badge i {
-  color: #4f46e5;
-}
-
-.user-chip {
-  background: #4f46e5 !important;
-  color: white !important;
-  border: none !important;
-  text-transform: capitalize;
-}
+    .user-chip {
+      background: #4f46e5 !important;
+      color: white !important;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
   </style>
+  <script src="js/auth.js"></script>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <h2><i class="fa-solid fa-book"></i> Library</h2>
   <a href="index.html">Dashboard</a>
@@ -210,7 +179,6 @@
   <a href="admin-reports.html">Report</a>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
   <div class="topbar">
@@ -221,7 +189,6 @@
 
     <div class="filter-container">
       <button class="filter-btn" onclick="toggleFilterMenu()">Filters</button>
-
       <div id="filterMenu" class="filter-menu hidden">
         <p onclick="applyFilter('all')">All</p>
         <p onclick="applyFilter('available')">Available</p>
@@ -250,47 +217,74 @@
 </div>
 
 <script>
+  protectPage(["student", "admin"]);
+const API = "/api/books";
 let allBooks = [];
 let userRole = "student";
 
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function authFetch(url, options = {}) {
+  const token = getToken();
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+      Authorization: "Bearer " + token
+    }
+  });
+}
+
 function checkLogin() {
-  fetch('/api/user')
+  const token = getToken();
+
+  if (!token) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  fetch("/api/user", {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    return res.json();
+  })
+  .then(data => {
+    document.getElementById("userInfo").innerHTML = `
+      <div class="user-badge">
+        <span><b>Name:</b> ${data.name}</span>
+        <span><b>ID:</b> ${data.id}</span>
+        <span class="user-chip">${data.role}</span>
+      </div>
+    `;
+    userRole = data.role;
+  })
+  .catch(() => {
+    localStorage.removeItem("token");
+    window.location.href = "/login.html";
+  });
+}
+
+function loadBooks() {
+  authFetch(API)
     .then(res => {
       if (!res.ok) throw new Error();
       return res.json();
     })
     .then(data => {
-        document.getElementById("userInfo").innerHTML = `
-  <div class="user-badge">
-
-    <span>
-      
-      <b>Name:</b> ${data.name}
-      <i class="fa-solid fa-user"></i>
-    </span>
-
-    <span>
-     
-      <b>ID:</b> ${data.id}
-    </span>
-
-    <span class="user-chip">
-      ${data.role}
-    </span>
-
-  </div>
-`;
-      userRole = data.role;
-    })
-    .catch(() => window.location.href = "/login");
-}
-
-function loadBooks() {
-  fetch('/api/books')
-    .then(res => res.json())
-    .then(data => {
       allBooks = data;
       displayBooks(data);
+    })
+    .catch(() => {
+      alert("Session expired");
+      logout();
     });
 }
 
@@ -303,7 +297,7 @@ function displayBooks(books) {
       <div class="card">
         <img src="${b.image}">
         <h3>${b.title}</h3>
-        <p>${b.description || "No description available"}</p>
+        <p>${b.description || ""}</p>
         <p><b>${b.author}</b></p>
 
         <button
@@ -320,16 +314,15 @@ function displayBooks(books) {
 
 function handleIssue(bookId) {
   if (userRole !== "admin") {
-    alert("Only admin can issue books. Students can only view.");
+    alert("Only admin can issue books");
     return;
   }
 
   const userId = prompt("Enter User ID:");
   if (!userId) return;
 
-  fetch('/api/issue', {
+  authFetch("/api/issue", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user_id: userId, book_id: bookId })
   })
   .then(res => res.json())
@@ -366,7 +359,8 @@ function toggleFilterMenu() {
 }
 
 function logout() {
-  fetch('/logout').then(() => window.location.href = "/login");
+  localStorage.removeItem("token");
+  window.location.href = "/login.html";
 }
 
 function toggleSidebar() {

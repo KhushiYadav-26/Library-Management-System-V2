@@ -105,7 +105,6 @@
 <div class="container">
   <h2>Login</h2>
 
-  <!-- UI role only (NOT used for security) -->
   <div class="roles">
     <div class="role-box selected" data-role="student">Student</div>
     <div class="role-box" data-role="admin">Admin</div>
@@ -115,13 +114,12 @@
   <input type="password" id="password" placeholder="Password" required>
 
   <button id="loginBtn">Login</button>
-  <a href="register.html" class="link">New User? Register</a>
+  <a href="register.html">New User? Register</a>
 </div>
 
 <div id="toast"></div>
 
 <script>
-  // UI role (optional only)
   let selectedRole = "student";
 
   document.querySelectorAll('.role-box').forEach(box => {
@@ -153,27 +151,30 @@
       const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email, password })
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data.user) {
+      if (!res.ok || !data.token) {
         showToast(data.message || "Login failed", "#f44336");
         return;
       }
 
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
       showToast("Login success");
 
-      // ✅ REAL ROLE BASED REDIRECT (IMPORTANT FIX)
       setTimeout(() => {
-        if (data.user.role === "admin") {
-          window.location.href = "/add.html";
-        } else {
-          window.location.href = "/index.html";
-        }
-      }, 800);
+  const role = data.user.role;
+
+  if (role === "admin") {
+    window.location.href = "/index.html";
+  } else {
+    window.location.href = "/index.html";
+  }
+}, 800);
 
     } catch (err) {
       console.error(err);

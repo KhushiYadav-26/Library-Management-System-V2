@@ -4,9 +4,19 @@
   <title>Add Book</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
+
+  <style>
   
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+  </style>
+  <script src="js/auth.js"></script>
+</head>
+
+<body>
 
 <div class="sidebar" id="sidebar">
   <h2><i class="fa-solid fa-book"></i> Library</h2>
@@ -17,73 +27,115 @@
 </div>
 
 <div class="main">
+
   <div class="topbar">
     <span class="hamburger" onclick="toggleSidebar()">☰</span>
     <h2>Add Book</h2>
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-    &nbsp; &nbsp; 
-   
-    
-
-    <h2></h2>
   </div>
-    <!-- Toast Message -->
-  <div id="toast" style="
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 500;
-      display: none;
-      z-index: 9999;
-      text-align:center;
-  "></div>
+
+  
+  <div id="toast"></div>
 
 
-<!-- Center Form -->
-<div class="form-container">
-  <form id="bookForm" enctype="multipart/form-data">
-    <h2>Add Book</h2>
+  <div class="form-container">
+    <form id="bookForm" enctype="multipart/form-data">
+      <h2>Add Book</h2>
 
-    <input type="text" id="title" placeholder="Title" required>
-    <input type="text" id="author" placeholder="Author" required>
-    <textarea id="description" placeholder="Description"></textarea>
+      <input type="text" id="title" placeholder="Title" required>
+      <input type="text" id="author" placeholder="Author" required>
+      <textarea id="description" placeholder="Description"></textarea>
 
-    <!-- Upload -->
-    <label>Upload Image</label>
-    <input type="file" id="image" name="image">
-    <div style="text-align:center; margin:10px 0; color:#999;">— OR —</div>
+      <label>Upload Image</label>
+      <input type="file" id="image" name="image">
 
-    <!-- OR URL -->
-    <label>Image URL</label>
-    <input type="text" id="imageUrl" placeholder="Paste Image URL">
+      <div style="text-align:center; margin:10px 0; color:#999;">— OR —</div>
 
-    <button type="submit">Add Book</button>
-  </form>
+      <label>Image URL</label>
+      <input type="text" id="imageUrl" placeholder="Paste Image URL">
+
+      <button type="submit">Add Book</button>
+    </form>
+  </div>
 </div>
 
-<script src="js/main.js"></script>
+<script>
+  protectPage(["admin"]);
+  
+const API = "/api/books";
+
+
+function checkAuth() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    window.location.href = "/login.html";
+  }
+}
+
+
+function showToast(msg, color="#4CAF50") {
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.style.background = color;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2000);
+}
+
+
+document.getElementById("bookForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem("token");
+
+  const title = document.getElementById("title").value;
+  const author = document.getElementById("author").value;
+  const description = document.getElementById("description").value;
+  const imageUrl = document.getElementById("imageUrl").value;
+
+  const imageFile = document.getElementById("image").files[0];
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("author", author);
+  formData.append("description", description);
+  formData.append("imageUrl", imageUrl);
+  if (imageFile) formData.append("image", imageFile);
+
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast("Book Added Successfully!");
+      document.getElementById("bookForm").reset();
+    } else {
+      showToast(data.message || "Error", "red");
+    }
+
+  } catch (err) {
+    console.log(err);
+    showToast("Server Error", "red");
+  }
+});
+
+
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("hide");
+}
+
+
+checkAuth();
+</script>
+
 </body>
 </html>

@@ -115,6 +115,7 @@ function renderTable(data) {
 }
 
 const searchInput = document.getElementById("search");
+
 if (searchInput) {
   let debounceTimer;
   searchInput.addEventListener("input", () => {
@@ -193,6 +194,7 @@ function returnBook(id) {
 }
 
 const form = document.getElementById("bookForm");
+
 if (form) {
   if (editId) {
     fetch(`${API}/${editId}`)
