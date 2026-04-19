@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - Library</title>
+
 <style>
   body {
     margin: 0;
@@ -61,7 +62,6 @@
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 14px;
-    transition: border 0.3s;
   }
 
   input:focus {
@@ -79,23 +79,10 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-    transition: background 0.3s;
   }
 
   button:hover {
     background: #3b38b8;
-  }
-
-  .link {
-    margin-top: 12px;
-    display: block;
-    color: #4f46e5;
-    text-decoration: none;
-    font-size: 14px;
-  }
-
-  .link:hover {
-    text-decoration: underline;
   }
 
   #toast {
@@ -108,18 +95,17 @@
     color: white;
     display: none;
     z-index: 9999;
-    font-weight: 500;
-    text-align: center;
     font-size: 14px;
   }
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <h2>Login</h2>
 
-  <!-- Role selection on top -->
+  <!-- UI role only (NOT used for security) -->
   <div class="roles">
     <div class="role-box selected" data-role="student">Student</div>
     <div class="role-box" data-role="admin">Admin</div>
@@ -127,6 +113,7 @@
 
   <input type="email" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
+
   <button id="loginBtn">Login</button>
   <a href="register.html" class="link">New User? Register</a>
 </div>
@@ -134,54 +121,63 @@
 <div id="toast"></div>
 
 <script>
-  const roleBoxes = document.querySelectorAll('.role-box');
-  let selectedRole = 'student';
+  // UI role (optional only)
+  let selectedRole = "student";
 
-  roleBoxes.forEach(box => {
+  document.querySelectorAll('.role-box').forEach(box => {
     box.addEventListener('click', () => {
-      roleBoxes.forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.role-box').forEach(b => b.classList.remove('selected'));
       box.classList.add('selected');
       selectedRole = box.dataset.role;
     });
   });
 
-  function showToast(msg, type='success'){
-    const toast = document.getElementById('toast');
+  function showToast(msg, color="#4CAF50") {
+    const toast = document.getElementById("toast");
     toast.innerText = msg;
-    toast.style.backgroundColor = type==='success'?'#4CAF50':'#f44336';
-    toast.style.display='block';
-    toast.style.opacity='1';
-    setTimeout(()=>{
-      toast.style.transition='opacity 0.5s';
-      toast.style.opacity='0';
-      setTimeout(()=>toast.style.display='none',500);
-    },2500);
+    toast.style.background = color;
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 2000);
   }
 
-  document.getElementById('loginBtn').addEventListener('click', async ()=>{
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    if(!email||!password){ showToast('Email and password required','error'); return; }
+    if (!email || !password) {
+      showToast("Fill all fields", "#f44336");
+      return;
+    }
 
-    try{
-      const res = await fetch('/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({email,password,role:selectedRole})
+    try {
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password })
       });
+
       const data = await res.json();
-      if(data.error) showToast(data.error,'error');
-      else{
-        showToast('Login successful! Redirecting...','success');
-        setTimeout(()=>{
-          if(selectedRole==='admin') window.location.href='add.html';
-          else window.location.href='index.html';
-        },1000);
+
+      if (!res.ok || !data.user) {
+        showToast(data.message || "Login failed", "#f44336");
+        return;
       }
-    }catch(err){
-      showToast('Server error','error');
+
+      showToast("Login success");
+
+      // ✅ REAL ROLE BASED REDIRECT (IMPORTANT FIX)
+      setTimeout(() => {
+        if (data.user.role === "admin") {
+          window.location.href = "/add.html";
+        } else {
+          window.location.href = "/index.html";
+        }
+      }, 800);
+
+    } catch (err) {
       console.error(err);
+      showToast("Server error", "#f44336");
     }
   });
 </script>
